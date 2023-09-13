@@ -1,6 +1,6 @@
 # deploycode_inotify_ansible
 
-Quellcode automatisch über inotify und Ansible auf Server Deployen
+Quellcode automatisch über inotify und Ansible auf Anderen Geräten Deployen
 
 Vorrausetzungen, installiert:
   * intoifywait
