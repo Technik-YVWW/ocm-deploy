@@ -1,0 +1,59 @@
+#!/bin/sh
+
+# Ermittle das Verzeichnis, in dem das Skript liegt
+# Verwende "readlink" für absolute Pfade und "dirname" für relative Pfade
+#SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+#cd $SCRIPT_DIR
+
+# Checlking the inotify Executable
+tool_inotifywait=$(which inotifywait)
+[ ! -x "$tool_inotifywait" ] && {
+    echo "The Inotifywait tool Can not be found. Please install it first"
+    exit 0
+}
+
+# Get Libaries.
+[ -f "/usr/lib/libDeploy/sh_functions" ] && . /usr/lib/libDeploy/sh_functions || . ./usr/lib/libDeploy/sh_functions
+. ./usr/lib/libDeploy/sh_functions
+
+# Search for Playbook Folders..
+pb_folder="/etc/deploycode/playbooks/"
+[ ! -d "$pb_folder" ] && pb_folder="./etc/deploycode/playbooks"
+[ ! -d "$pb_folder" ] && {
+    echo "Error! Can not dound the Playbook folder. Aborting Script."
+    exit 0
+}
+
+pb_vars_folder="/etc/deploycode/playbook-vars/"
+[ ! -d "$pb_vars_folder" ] && {
+    echo "Error! Can not dound the Playbook-Vars Folder folder ($pb_vars_folder) folder. Aborting Script."
+    exit 0
+}
+
+config_folder="/etc/deploycode/configs-enabled"
+[ ! -d "$config_folder" ] && {
+    echo "Error! Can not dound the Config-Enabled folder ($config_folder) folder. Aborting Script."
+    exit 0
+}
+
+
+cd $config_folder
+count_configs=$(ls $config_folder/*.conf | wc -w)
+count_run=0
+for file in $(ls $config_folder/*.conf); do
+
+  echo Working on: $file
+  [ -L "$file" ] && {
+    file=$(readlink $file)
+    file=$(realpath $file)
+  }
+
+  count_run=$(expr $count_run + 1)
+  echo "Starting run $count_run from $count_configs"
+
+  # Its not The Last Config - Start in the Background.
+  [ ! "$count_run" = "$count_configs" ] && watch_and_run_playbooks "$file"&
+
+  # Its the Last Config - Start in the Foreground.
+  [ "$count_run" = "$count_configs" ] && watch_and_run_playbooks "$file"
+done

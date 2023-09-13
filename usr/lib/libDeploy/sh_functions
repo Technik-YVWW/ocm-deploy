@@ -1,34 +1,121 @@
+# Von einem Kommentar in einer yaml, den String extrahieren
+get_config_value()
+{
+    local file_path="$1"
+    [ ! -r "$file_path" ] && return 1
+
+    local valuename="$2"
+    [ -z "$valuename" ] && return 1
+    valuename="$valuename"
+
+    grep -w "$valuename" $file_path | awk -F"${valuename}:" '{print $2}' | tr -d '[:space:]'
+}
+
+get_yml_value()
+{
+    local file_path="$1"
+    [ ! -r "$file_path" ] && return 1
+
+    local valuename="$2"
+    [ -z "$valuename" ] && return 1
+
+    grep -w  "$valuename" $file_path | awk -F':' '{print $2}' | tr -d '[:space:]'
+}
+
 # Funktion zum Ausführen des Ansible-Playbooks
 run_ansible_playbook() {
     local playbook="$1"
-    local vars_file="$2"
-    local vars_file_2="$3"
+    local inventory="$2"
+    local vars_file="$3"
 
-    #command_vars=
-    ansible-playbook -i lib/inventory.yml -e "@$vars_file" "$playbook"
+    for file in $playbook $inventory $vars_file; do
+        [ ! -f "$file" ] && {
+            echo "Aborting Starting Playbook, file: $file does not exist."
+            return 1
+        }
+    done
+
+    ansible-playbook -i "$inventory" -e "@$vars_file" "$playbook"
 }
 
 # Funktion für die Endlosschleife mit inotifywait
-# ansible-playbook -i inventory.yml -e "@vars_inventorys_to_semaphore.yml" push-to-server.yml
-watch_and_run_playbook() {
-    local watch_dir="$1"
-    local vars_file="lib/vars/$2.yml"
+# $1: Ordner zu Überwachnung mit INotifywait
+# $2: DIe Vars Datei, zur Übergabe an run_ansible_playbook
+# $3: Die  Playbook datei, welche unter /usr/lib/libDeploy/playbooks liegt
+# $4: [Optional] eine Zweite Vars Datei zur Ausfüphrung, des Playbooks in $5
+# $5: [Optional] die Zweite Playbook Datei-
+#
+#
+# Beispiel: ansible-playbook -i inventory.yml -e "@vars_inventorys_to_semaphore.yml" push-to-server.yml
+watch_and_run_playbooks() {
+    local config_file="$1"
+    [ ! -r "$config_file" ] && {
+        echo "Can not Read the Config: $config_file. Abort."
+        return 1
+    }
 
-    local playbook="$3"
-    [ -z "$playbook" ] && playbook="push-to-server"
-    playbook="lib/pbs/$playbook.yml"
+    local playbook_folder="$2"
+    [ -z "$playbook_folder" ] && playbook_folder="$pb_folder"
+    [ ! -d "$playbook_folder" ] && echo "No Playbook folder found ($playbook_folder) in function watch_and_run_playbooks, abort." && return 2
 
-    local vars_file_2="lib/vars/$4.yml"
+    local playbook_vars_folder="$3"
+    [ -z "$playbook_vars_folder" ] && playbook_vars_folder="$pb_vars_folder"
+    [ ! -d "$playbook_vars_folder" ] && echo "No Playbook vars folder ($playbook_vars_folder) found in function watch_and_run_playbooks, abort." && return 3
 
-    local playbook_2="$5"
-    [ ! -z "$playbook_2" ] && playbook_2="lib/pbs/$playbook_2.yml"
+    local tmp_inventorys="/tmp/deploycode/inv/"
+    [ ! -d "$tmp_inventorys" ] && mkdir -p "$tmp_inventorys"
+
+    # Get the Dir to Watch.
+    inotify_watchdir=$(get_config_value "$file" "inotify_watchdir")
+    [ ! -d "$inotify_watchdir" ] && {
+        echo "ERROR: The Directory $inotify_watchdir does not exist. Abort."
+        return 1
+    }
 
     while true; do
-        # Überwache das Verzeichnis auf Änderungen
-        inotifywait -r -e modify,create,delete "$watch_dir"
+        # The Watchdir is deleted, so stop the Script .
+        [ ! -d "$inotify_watchdir" ] && break
 
-        # Rufe das Ansible-Playbook auf
-        run_ansible_playbook "$playbook" "$vars_file"
-        [ ! -z "$playbook_2" ] && run_ansible_playbook "$playbook_2" "$vars_file_2"
+        # Looking for Changes in the Watchdir
+        echo Starting inotifywait: inotifywait -r -e modify,create,delete "$inotify_watchdir"
+        inotifywait -r -e modify,create,delete "$inotify_watchdir"
+        [ ! "$?" = "0" ] && {
+            echo "Error in Inotifywait, aborting Loop, Directory Deleted??"
+            break
+        }
+
+        # Waiting 5 Seconds after action. be gentle to the filesystem
+        sleep 5
+
+        for i in $(seq 1 100); do
+          playbook_file=$(get_config_value "$file" "playbook${i}")
+          playbook_vars_file=$(get_config_value "$file" "vars_playbook${i}")
+          [ -z "$playbook_file" ] && break
+          [ -z "$playbook_vars_file" ] && break
+
+          # Building Full Pathes..
+          playbook_file="${playbook_folder}${playbook_file}.yml"
+          [ ! -r $playbook_file ] && echo "Error! Playbook File ($playbook_file) does not exist! Abort!" && break
+
+          playbook_vars_file="${playbook_vars_folder}${playbook_vars_file}.yml"
+          [ ! -r "$playbook_vars_file" ] && echo "Error! Playbook Vars File ($playbook_vars_file) does not exist! Abort!" && break
+
+          # Creating a Temporary Invetory, if needed.
+          server=$(get_yml_value "$playbook_vars_file" "target_server")
+          [ -z "$server" ] && {
+             echo "Can not found a Server. Skript abort."
+          }
+
+          playbook_inv_file="${tmp_inventorys}inv_$(echo $server | tr -d '.').ini"
+          [ ! -f "$playbook_inv_file" ] && {
+            touch "$playbook_inv_file"
+            echo "[hosts]" >> "$playbook_inv_file"
+            echo "$server" >> "$playbook_inv_file"
+          }
+
+          echo "Execute Playbook: $playbook_file, vars: $playbook_vars_file, inv: $playbook_inv_file"
+          run_ansible_playbook "$playbook_file" "$playbook_inv_file" "$playbook_vars_file"
+        done
+        #break
     done
 }
