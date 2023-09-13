@@ -1,0 +1,4 @@
+target_server: 172.24.0.9
+full_bare_repo: ssh://git@172.24.0.51:/git/openwrt_scripts.git
+remote_dir: /git-work/openwrt_scripts
+target_user: semaphore

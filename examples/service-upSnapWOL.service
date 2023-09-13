@@ -1,0 +1,15 @@
+[Unit]
+Description=Ansible Watchdog Service
+After=network.target
+
+[Service]
+User=root
+Group=root
+Type=simple
+Restart=always
+RestartSec=10
+WorkingDirectory=/git-work/ansible_ww_inventorys/ansible-playbook-pushToServer
+ExecStart=/git-work/ansible_ww_inventorys/ansible-playbook-pushToServer/push-to-servers_upSnapWOL.sh
+
+[Install]
+WantedBy=multi-user.target

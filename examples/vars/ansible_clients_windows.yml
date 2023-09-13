@@ -1,0 +1,4 @@
+target_server: 172.24.0.9
+full_bare_repo: ssh://git@172.24.0.51:/git/ansible_clients_windows.git
+remote_dir: /git-work/ansible_clients_windows
+target_user: semaphore

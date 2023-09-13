@@ -1,0 +1,34 @@
+# Funktion zum Ausführen des Ansible-Playbooks
+run_ansible_playbook() {
+    local playbook="$1"
+    local vars_file="$2"
+    local vars_file_2="$3"
+
+    #command_vars=
+    ansible-playbook -i lib/inventory.yml -e "@$vars_file" "$playbook"
+}
+
+# Funktion für die Endlosschleife mit inotifywait
+# ansible-playbook -i inventory.yml -e "@vars_inventorys_to_semaphore.yml" push-to-server.yml
+watch_and_run_playbook() {
+    local watch_dir="$1"
+    local vars_file="lib/vars/$2.yml"
+
+    local playbook="$3"
+    [ -z "$playbook" ] && playbook="push-to-server"
+    playbook="lib/pbs/$playbook.yml"
+
+    local vars_file_2="lib/vars/$4.yml"
+
+    local playbook_2="$5"
+    [ ! -z "$playbook_2" ] && playbook_2="lib/pbs/$playbook_2.yml"
+
+    while true; do
+        # Überwache das Verzeichnis auf Änderungen
+        inotifywait -r -e modify,create,delete "$watch_dir"
+
+        # Rufe das Ansible-Playbook auf
+        run_ansible_playbook "$playbook" "$vars_file"
+        [ ! -z "$playbook_2" ] && run_ansible_playbook "$playbook_2" "$vars_file_2"
+    done
+}
