@@ -13,12 +13,12 @@ tool_inotifywait=$(which inotifywait)
 }
 
 # Get Libaries.
-[ -f "/usr/lib/libDeploy/sh_functions" ] && . /usr/lib/libDeploy/sh_functions || . ./usr/lib/libDeploy/sh_functions
-. ./usr/lib/libDeploy/sh_functions
+[ -f "/usr/lib/libDeploy" ] && . /usr/lib/libDeploy || . ./usr/lib/libDeploy
 
 # Search for Playbook Folders..
 pb_folder="/etc/deploycode/playbooks/"
 [ ! -d "$pb_folder" ] && pb_folder="./etc/deploycode/playbooks"
+
 [ ! -d "$pb_folder" ] && {
     echo "Error! Can not dound the Playbook folder. Aborting Script."
     exit 0
@@ -32,7 +32,7 @@ pb_vars_folder="/etc/deploycode/playbook-vars/"
 
 config_folder="/etc/deploycode/configs-enabled"
 [ ! -d "$config_folder" ] && {
-    echo "Error! Can not dound the Config-Enabled folder ($config_folder) folder. Aborting Script."
+    echo "Error! Can not found the Config-Enabled folder ($config_folder) folder. Aborting Script."
     exit 0
 }
 

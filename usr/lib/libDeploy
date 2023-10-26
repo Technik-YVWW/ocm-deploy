@@ -116,6 +116,7 @@ watch_and_run_playbooks() {
           echo "Execute Playbook: $playbook_file, vars: $playbook_vars_file, inv: $playbook_inv_file"
           run_ansible_playbook "$playbook_file" "$playbook_inv_file" "$playbook_vars_file"
         done
+        # For Debugging: only run one time.
         #break
     done
 }
