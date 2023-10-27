@@ -42,12 +42,11 @@ run_ansible_playbook() {
 # $1: Ordner zu Überwachnung mit INotifywait
 # $2: DIe Vars Datei, zur Übergabe an run_ansible_playbook
 # $3: Die  Playbook datei, welche unter /usr/lib/libDeploy/playbooks liegt
-# $4: [Optional] eine Zweite Vars Datei zur Ausfüphrung, des Playbooks in $5
-# $5: [Optional] die Zweite Playbook Datei-
+# $4: Testmode: Statt zu warten, sofort ausführen
 #
 #
 # Beispiel: ansible-playbook -i inventory.yml -e "@vars_inventorys_to_semaphore.yml" push-to-server.yml
-watch_and_run_playbooks() {
+watch_for_run_pb() {
     local config_file="$1"
     [ ! -r "$config_file" ] && {
         echo "Can not Read the Config: $config_file. Abort."
@@ -61,6 +60,9 @@ watch_and_run_playbooks() {
     local playbook_vars_folder="$3"
     [ -z "$playbook_vars_folder" ] && playbook_vars_folder="$pb_vars_folder"
     [ ! -d "$playbook_vars_folder" ] && echo "No Playbook vars folder ($playbook_vars_folder) found in function watch_and_run_playbooks, abort." && return 3
+
+    local testmode="$4"
+    [ -z "$testmode" ] && testmode="0"
 
     local tmp_inventorys="/tmp/deploycode/inv/"
     [ ! -d "$tmp_inventorys" ] && mkdir -p "$tmp_inventorys"
@@ -77,15 +79,19 @@ watch_and_run_playbooks() {
         [ ! -d "$inotify_watchdir" ] && break
 
         # Looking for Changes in the Watchdir
-        echo Starting inotifywait: inotifywait -r -e modify,create,delete "$inotify_watchdir"
-        inotifywait -r -e modify,create,delete "$inotify_watchdir"
-        [ ! "$?" = "0" ] && {
-            echo "Error in Inotifywait, aborting Loop, Directory Deleted??"
-            break
-        }
+        [ "$testmode" = "0" ] && {
+            echo Starting inotifywait: inotifywait -r -e modify,create,delete "$inotify_watchdir"
+            inotifywait -r -e modify,create,delete "$inotify_watchdir"
+            [ ! "$?" = "0" ] && {
+                echo "Error in Inotifywait, aborting Loop, Directory Deleted??"
+                break
+            }
 
-        # Waiting 5 Seconds after action. be gentle to the filesystem
-        sleep 5
+            # Waiting 5 Seconds after action. be gentle to the filesystem
+            sleep 5
+        } || {
+            echp "Notice: in Testmode. Skipping Wait for Files."
+        }
 
         for i in $(seq 1 100); do
           playbook_file=$(get_config_value "$file" "playbook${i}")
@@ -100,7 +106,7 @@ watch_and_run_playbooks() {
           playbook_vars_file="${playbook_vars_folder}${playbook_vars_file}.yml"
           [ ! -r "$playbook_vars_file" ] && echo "Error! Playbook Vars File ($playbook_vars_file) does not exist! Abort!" && break
 
-          # Creating a Temporary Invetory, if needed.
+          # Creating a Temporary Invetory.
           server=$(get_yml_value "$playbook_vars_file" "target_server")
           [ -z "$server" ] && {
              echo "Can not found a Server. Skript abort."

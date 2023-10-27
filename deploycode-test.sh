@@ -1,10 +1,18 @@
 #!/bin/sh
 
-# Checking the inotify Executable
+# Checlking the inotify Executable
 tool_inotifywait=$(which inotifywait)
 [ ! -x "$tool_inotifywait" ] && {
     echo "The Inotifywait tool Can not be found. Please install it first"
     exit 0
+}
+
+### Get the COnfig name to test;
+config_name="$1"
+[ -z "$config_name" ] && {
+    echo "Error: this is a Test Script. Overgive a File name Placed in $config_folder as First Patameter."
+    echo "Aborting Script"
+    exit 1
 }
 
 # Get Libaries.
@@ -32,22 +40,11 @@ config_folder="/etc/deploycode/configs-enabled"
 }
 
 cd $config_folder
-count_configs=$(ls $config_folder/*.conf | wc -w)
-count_run=0
-for file in $(ls $config_folder/*.conf); do
+config_file="${config_folder}/${config_name}"
+[ ! -f "$config_file" ] && {
+    echo "Error!: The File $config_file does not exist"
+    echo "Aborting Script"
+    exit 2
+}
 
-  echo Working on: $file
-  [ -L "$file" ] && {
-    file=$(readlink $file)
-    file=$(realpath $file)
-  }
-
-  count_run=$(expr $count_run + 1)
-  echo "Starting run $count_run from $count_configs"
-
-  # Its not The Last Config - Start in the Background.
-  [ ! "$count_run" = "$count_configs" ] && watch_for_run_pb "$file"&
-
-  # Its the Last Config - Start in the Foreground.
-  [ "$count_run" = "$count_configs" ] && watch_for_run_pb "$file"
-done
+watch_for_run_pb "$config_file" "" "" "1"
