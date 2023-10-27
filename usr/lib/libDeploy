@@ -95,7 +95,7 @@ watch_for_run_pb() {
         }
 
         for i in $(seq 1 100); do
-          echo "-------- SEQ: i$ --------"
+          echo "-------- SEQ: $i --------"
           playbook_file=$(get_config_value "$config_file" "playbook${i}")
           playbook_vars_file=$(get_config_value "$config_file" "vars_playbook${i}")
           [ -z "$playbook_file" ] && break
