@@ -125,6 +125,6 @@ watch_for_run_pb() {
           run_ansible_playbook "$playbook_file" "$playbook_inv_file" "$playbook_vars_file"
         done
         # On Testmode: only run one time.
-        [ "$testmode" = "0" ] && break
+        [ "$testmode" = "1" ] && break
     done
 }
