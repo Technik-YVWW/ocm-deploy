@@ -16,7 +16,7 @@ echo "Installig Mainscript..."
 cp -fv deploycode /usr/bin
 
 echo Installing Libaries..
-cp -fv usr/lib/libDeploy /usr/lib/
+cp -fv usr/lib/libDeploy /usr/lib/libDeploy
 
 for file in $(ls ./etc/deploycode/playbooks); do
     [ -f "./etc/deploycode/playbooks/$file" ] && {
