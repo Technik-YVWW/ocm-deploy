@@ -16,7 +16,7 @@ config_name="$1"
 }
 
 # Get Libaries.
-[ -f "/usr/lib/libDeploy" ] && . /usr/lib/libDeploy || . ./usr/lib/libDeploy
+[ -f "./usr/lib/libDeploy" ] && . ./usr/lib/libDeploy || . /usr/lib/libDeploy
 
 # Search for Playbook Folders..
 pb_folder="/etc/deploycode/playbooks/"
