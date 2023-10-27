@@ -89,7 +89,7 @@ watch_for_run_pb() {
             # Waiting 5 Seconds after action. be gentle to the filesystem
             sleep 5
         } || {
-            echp "Notice: in Testmode. Skipping inotify."
+            echo "-- IN TESTMODE: Skipping inotify."
         }
 
         for i in $(seq 1 100); do
@@ -123,8 +123,10 @@ watch_for_run_pb() {
         done
         # On Testmode: only run one time.
         [ "$testmode" = "1" ] && {
-            echo "TESTMODE. We Not Wait for Changes, Skript is End now."
+            echo "-- IN TESTMODE: We Not Wait for Changes, Skript is End now."
             break
         }
+        
+        [ -f "$playbook_inv_file" ] && rm -f $playbook_inv_file
     done
 }
