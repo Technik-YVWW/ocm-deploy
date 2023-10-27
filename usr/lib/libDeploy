@@ -68,7 +68,7 @@ watch_for_run_pb() {
     [ ! -d "$tmp_inventorys" ] && mkdir -p "$tmp_inventorys"
 
     # Get the Dir to Watch.
-    echo "COnfig_file: $file"
+    echo "COnfig_file: $config_file"
     inotify_watchdir=$(get_config_value "$file" "inotify_watchdir")
     [ ! -d "$inotify_watchdir" ] && {
         echo "ERROR: The Directory $inotify_watchdir does not exist. Abort."
