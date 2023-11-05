@@ -1,14 +1,10 @@
 #!/bin/sh
 
-# Checking the inotify Executable
-tool_inotifywait=$(which inotifywait)
-[ ! -x "$tool_inotifywait" ] && {
-    echo "The Inotifywait tool Can not be found. Please install it first"
-    exit 0
-}
-
 # Get Libaries.
+# Priorize, the Internal Libaries - thats the defaullt.
 [ -f "/usr/lib/libDeploy" ] && . /usr/lib/libDeploy || . ./usr/lib/libDeploy
+# Priorize, the Development Libs in this folder, thats for Test envirement.
+#[ -f "./usr/lib/libDeploy" ] && . ./usr/lib/libDeploy || . /usr/lib/libDeploy
 
 # Search for Playbook Folders..
 pb_folder="/etc/deploycode/playbooks/"
@@ -47,7 +43,7 @@ kill_runnings()  {
      pid="$(cat $file)"
      echo "Killing PID: $pid"
      [ -z "$pid" ] && continue
-     
+
      pkill -TERM -P $pid
      [ -f "$file" ] && rm -f "$file"
     done

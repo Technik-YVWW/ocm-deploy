@@ -1,12 +1,5 @@
 #!/bin/sh
 
-# Checlking the inotify Executable
-tool_inotifywait=$(which inotifywait)
-[ ! -x "$tool_inotifywait" ] && {
-    echo "The Inotifywait tool Can not be found. Please install it first"
-    exit 0
-}
-
 # Get Libaries.
 [ -f "./usr/lib/libDeploy" ] && . ./usr/lib/libDeploy || . /usr/lib/libDeploy
 

@@ -1,3 +1,26 @@
+[ "DEPLOYCODE_SILENT_ANSIBLE" = "" ] && DEPLOYCODE_SILENT_ANSIBLE=0
+[ "DEPLOYCODE_SILENT_INOTIFY" = "" ] && DEPLOYCODE_SILENT_INOTIFY=0
+
+find_tool_inotify() {
+    [ -x "$tool_inotifywait" ] && return 0
+
+    tool_inotifywait=$(which inotifywait)
+    [ ! -x "$tool_inotifywait" ] && {
+        echo "The Inotifywait tool Can not be found. Please install it first"
+        exit 0
+    }
+}
+
+find_tool_ansible() {
+    [ -x "$tool_ansible" ] && return 0
+
+    tool_ansible=$(which ansible-playbook)
+    [ ! -x "$tool_ansible" ] && {
+        echo "The ansible-playbook tool Can not be found. Please install it first"
+        exit 0
+    }
+}
+
 # von einer .conf datei, den wert Extrahieren.
 get_config_value()
 {
@@ -28,6 +51,7 @@ run_ansible_playbook() {
     local inventory="$2"
     local vars_file="$3"
 
+    find_tool_ansible
     for file in $playbook $inventory $vars_file; do
         [ ! -f "$file" ] && {
             echo "Aborting Starting Playbook, file: $file does not exist."
@@ -35,7 +59,11 @@ run_ansible_playbook() {
         }
     done
 
-    ansible-playbook -i "$inventory" -e "@$vars_file" "$playbook"
+    [ "$DEPLOYCODE_SILENT_ANSIBLE" = "1" ] && {
+        $tool_ansible -i "$inventory" -e "@$vars_file" "$playbook" 2>&1 >/dev/null
+    } || $tool_ansible -i "$inventory" -e "@$vars_file" "$playbook"
+
+    return $?
 }
 
 #
@@ -80,8 +108,10 @@ watch_for_run_pb() {
 
         # Looking for Changes in the Watchdir
         [ "$testmode" = "0" ] && {
-            echo Starting inotifywait: inotifywait -r -e modify,create,delete "$inotify_watchdir"
-            inotifywait -r -e modify,create,delete "$inotify_watchdir"
+            find_tool_inotify
+            #echo Starting inotifywait: inotifywait -r -e modify,create,delete "$inotify_watchdir"
+
+            $tool_inotifywait -r -e modify,create,delete "$inotify_watchdir"
             [ ! "$?" = "0" ] && {
                 echo "Error in Inotifywait, aborting Loop, Directory Deleted??"
                 break
@@ -122,6 +152,7 @@ watch_for_run_pb() {
           echo "Execute Playbook: $playbook_file, vars: $playbook_vars_file, inv: $playbook_inv_file"
           run_ansible_playbook "$playbook_file" "$playbook_inv_file" "$playbook_vars_file"
         done
+
         # On Testmode: only run one time.
         [ "$testmode" = "1" ] && {
             echo "-- IN TESTMODE: We Not Wait for Changes, Skript is End now."
