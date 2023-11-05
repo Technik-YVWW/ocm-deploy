@@ -31,6 +31,13 @@ config_folder="/etc/deploycode/configs-enabled"
     exit 0
 }
 
+function ctrl_c() {
+        echo "** Trapped CTRL-C"
+}
+
+# trap ctrl-c and call ctrl_c()
+trap ctrl_c INT
+
 cd $config_folder
 count_configs=$(ls $config_folder/*.conf | wc -w)
 count_run=0
