@@ -1,5 +1,6 @@
 - name: Ping Machines Test
   hosts: all
+  remote_user: "{{ target_user }}"
   gather_facts: true
   tasks:
    - name: Ping my hosts
