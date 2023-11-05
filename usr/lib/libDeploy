@@ -30,7 +30,7 @@ get_config_value()
     local valuename="$2"
     [ -z "$valuename" ] && return 1
 
-    grep -w "$valuename" $file_path | awk -F"${valuename}:" '{print $2}' | tr -d '[:space:]'
+    grep -v "^#" $file_path | grep -w "$valuename" | awk -F"${valuename}:" '{print $2}' | tr -d '[:space:]'
 }
 
 # von einer .xml datei, den wert Extrahieren.
