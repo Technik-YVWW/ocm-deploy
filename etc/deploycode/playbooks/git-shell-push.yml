@@ -1,0 +1,18 @@
+- name: Aktualisiere Git-Repository auf entferntem Host
+  hosts: "localhost"
+  gather_facts: no
+
+  tasks:
+    - name: Daten hinzufügen und Pushen
+      become: true
+      become_user: "{{ git_local_user }}"
+      ansible.builtin.shell: |
+        git config --global user.name "{{ git_user }}"
+        git config --global user.email "{{ git_mail }}"
+        git add -A
+        git commit -m "Automated Commit by Ansible " 
+        git push --all
+      args:
+        chdir: "{{ local_dir }}"
+      ignore_errors: true
+      register: output
