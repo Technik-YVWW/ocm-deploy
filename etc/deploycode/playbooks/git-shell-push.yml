@@ -10,7 +10,7 @@
         git config --global user.name "{{ git_user }}"
         git config --global user.email "{{ git_mail }}"
         [ -x "/usr/bin/git-update-toServer" ] && {
-          /usr/bin/git-update-toServer "Automated Commit by Ansible (from iobroker Web GUI)" 
+          /usr/bin/git-update-toServer
         } || {
           git add -A
           git commit -m "Automated Commit by Ansible " 
