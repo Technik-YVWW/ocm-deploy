@@ -5,15 +5,19 @@
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 cd $SCRIPT_DIR
 
-echo Checking Foldrs...
+bins="deploycode deploycode-test"
 folders="/etc/deploycode/configs-available /etc/deploycode/configs-enabled /etc/deploycode/playbooks /etc/deploycode/playbook-vars"
+
+echo Checking Foldrs...
 for folder in $folders; do
     echo Folder: $folder
     [ ! -d "$folder" ] && mkdir -p $folder
 done
 
 echo "Installig Mainscript..."
-cp -fvu deploycode /usr/bin
+for bin in $bins; do
+    cp -fvu $bin /usr/bin
+done
 
 echo Installing Libaries..
 cp -fvu usr/lib/libDeploy /usr/lib

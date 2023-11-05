@@ -1,4 +1,6 @@
 #!/bin/sh
+DEPLOYCODE_SILENT_ANSIBLE=0
+DEPLOYCODE_SILENT_INOTIFY=0
 
 # Get Libaries.
 [ -f "./usr/lib/libDeploy" ] && . ./usr/lib/libDeploy || . /usr/lib/libDeploy

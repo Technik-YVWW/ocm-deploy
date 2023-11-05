@@ -1,4 +1,6 @@
 #!/bin/sh
+DEPLOYCODE_SILENT_ANSIBLE=1
+DEPLOYCODE_SILENT_INOTIFY=0
 
 # Get Libaries.
 # Priorize, the Internal Libaries - thats the defaullt.
