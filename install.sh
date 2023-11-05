@@ -24,3 +24,8 @@ for file in $(ls ./etc/deploycode/playbooks); do
         cp -rv ./etc/deploycode/playbooks/$file /etc/deploycode/playbooks
     }
 done
+
+echo Copying Service Skript...
+cp -fvu etc/systemd/system/deploycode-inotify.service /etc/systemd/system/
+echo "[INFO] You Can Activate it by systemctl enable deploycode-inotify"
+echo "[INFO] You Can Start/Stop it by systemctl start/stop deploycode-inotify"

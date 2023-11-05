@@ -1,0 +1,15 @@
+[Unit]
+Description=Deploycode Inotify Service
+After=network.target
+
+[Service]
+User=root
+Group=root
+Type=simple
+Restart=always
+RestartSec=10
+WorkingDirectory=/usr/bin
+ExecStart=/usr/bin/deploycode
+
+[Install]
+WantedBy=multi-user.target
