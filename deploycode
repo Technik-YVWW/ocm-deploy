@@ -35,15 +35,28 @@ pb_tmp_pids="/tmp/deploycode/pids/"
 [ ! -d "$pb_tmp_pids" ] && mkdir -p "$pb_tmp_pids"
 
 ctrl_c() {
-    echo "** Trapped CTRL-C"
-    for file in $(ls $pb_tmp_pids/*.pid); do
-     echo "Listing: $file" 
-    done
-    
+    echo "** CTRL-C Pressed. Delete RUnning PIDS..."
+    kill_runnings
 }
 
-# trap ctrl-c and call ctrl_c()
+kill_runnings()  {
+    count_pids=$(ls $pb_tmp_pids/*.pid | wc -w)
+    [ ! "$count_pids" = "0" ] || return 0
+
+    for file in $(ls $pb_tmp_pids/*.pid); do
+     pid="$(cat $file)"
+     echo "Killing PID: $pid"
+     [ -z "$pid" ] && continue
+     
+     pkill -TERM -P $pid
+     [ -f "$file" ] && rm -f "$file"
+    done
+}
+
+# trap ctrl-c, Termination and Kill..
 trap ctrl_c INT
+trap kill_runnings TERM
+trap kill_runnings KILL
 
 cd $config_folder
 count_configs=$(ls $config_folder/*.conf | wc -w)
@@ -63,7 +76,7 @@ for file in $(ls $config_folder/*.conf); do
   [ ! "$count_run" = "$count_configs" ] && {
     watch_for_run_pb "$file"&
     watch_pid="$!"
-    echo -n "$watch_pid" > "${pb_tmp_pids}${watch_pid}.pid"
+    echo "$watch_pid" > "${pb_tmp_pids}${watch_pid}.pid"
     echo "Value: $!"
   }
 
