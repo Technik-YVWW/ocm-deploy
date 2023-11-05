@@ -9,9 +9,13 @@
       ansible.builtin.shell: |
         git config --global user.name "{{ git_user }}"
         git config --global user.email "{{ git_mail }}"
-        git add -A
-        git commit -m "Automated Commit by Ansible " 
-        git push --all
+        [ -x "/usr/bin/git-update-toServer" ] && {
+          /usr/bin/git-update-toServer "Automated Commit by Ansible (from iobroker Web GUI)" 
+        } || {
+          git add -A
+          git commit -m "Automated Commit by Ansible " 
+          git push --all
+        }
       args:
         chdir: "{{ local_dir }}"
       ignore_errors: true
