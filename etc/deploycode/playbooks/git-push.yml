@@ -8,6 +8,8 @@
       become_user: "{{ git_local_user }}"
       git_acp:
         path: "{{ local_dir }}"
-        url: "{{ full_bare_repo }}"
         branch: "{{ git_branch }}"
+        comment: "Automatic Changes by iobroker (interface)"
+        add: [ "." ]
+        url: "{{ full_bare_repo }}"
         push_force: true
