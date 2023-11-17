@@ -32,7 +32,7 @@ count_folder_files() {
     extension="$2"
     [ -z "$folder" ] && return 1
 
-    [ -z "$extension" ] && counter=$(find "$folder"/* -maxdepth 0 -type f) ||  counter=$(find "$folder"/*."${extension}" -maxdepth 0 -type f)
+    [ -z "$extension" ] && counter=$(find "$folder"/* -maxdepth 0 -type f) || counter=$(find "$folder"/*."$extension" -maxdepth 0 -type f)
     [ -z "$counter" ] && return 2
 
     counter=$(echo "$counter" | wc -l)

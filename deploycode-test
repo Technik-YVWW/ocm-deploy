@@ -30,6 +30,9 @@ config_folder="/etc/deploycode/configs-available"
 	exit 0
 }
 
+count_configs=$(count_folder_files "$config_folder" "conf")
+echo "Aktivated Config Files: $count_configs"
+
 ### Get the COnfig name to test;
 config_name="$1"
 [ -z "$config_name" ] && {

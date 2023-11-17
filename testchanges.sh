@@ -29,4 +29,5 @@ count_folder_files "./etc"
 #count_pids=$(find ./etc/* -maxdepth 0 -type f | wc -l)
 #echo $count_pids
 
-count_folder_files "./etc/deploycode/playbooks"
+echo "with extension:"
+count_folder_files "./etc/deploycode/playbooks" "yml"
