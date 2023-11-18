@@ -1,3 +1,4 @@
+---
 - name: Ping Machines Test
   hosts: all
   remote_user: "{{ target_user }}"
@@ -5,8 +6,8 @@
 
   tasks:
    - name: Ping my hosts
-     ping:
+     ansible.builtin.ping:
    - name: Print all available facts
      ansible.builtin.debug:
-     #var: ansible_facts
+       # yamllint disable
        msg: "{{ ansible_facts | dict2items | selectattr('value.macaddress', 'defined') | map(attribute='value') | list }}"

@@ -1,5 +1,22 @@
+---
+# .pre-commit-config.yaml
+#  Config for it pre-commit, for more information see https://pre-commit.com/
+ci:
+  # This section is specific to pre-commit.ci, telling it to create a pull request
+  #  - for Information about tjis see https://pre-commit.ci/
+  # to update the linter version tag every week.
+  autoupdate_schedule: weekly
+  # (optional, default: false) whether to recursively check out submodules
+  submodules: true
+  # If you have other Ansible collection dependencies (requirements.yml)
+  # `pre-commit.ci` will not be able to install them because it runs in offline mode,
+  # and you will need to tell it to skip the hook.
+  # skip:
+  #   - ansible-lint
+
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
+  # Default Pre-Commit Repository
+  - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
       - id: check-xml
@@ -8,20 +25,29 @@ repos:
       - id: end-of-file-fixer
       - id: trailing-whitespace
       - id: check-executables-have-shebangs
-      #- id: check-shebang-scripts-are-executable
-- repo: https://github.com/jumanjihouse/pre-commit-hooks
-  rev: 3.0.0
-  hooks:
-    - id: shellcheck
-      args: [--check-sourced, --external-sources]
-    - id: shfmt
-      args: [--posix]
-    - id: git-dirty
-- repo: https://github.com/igorshubovych/markdownlint-cli
-  rev: v0.37.0
-  hooks:
-  - id: markdownlint
--   repo: https://github.com/psf/black
+
+  # Spell Checker
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.4
+    hooks:
+      - id: codespell
+
+  # Shellcheck and Shellfomat
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks
+    rev: 3.0.0
+    hooks:
+      - id: shellcheck
+        args: [--check-sourced, --external-sources]
+      - id: shfmt
+        args: [--posix]
+      - id: git-dirty
+
+  # Markdown File Checker
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.37.0
+    hooks:
+      - id: markdownlint
+  - repo: https://github.com/psf/black
     rev: 23.11.0
     hooks:
       - id: black

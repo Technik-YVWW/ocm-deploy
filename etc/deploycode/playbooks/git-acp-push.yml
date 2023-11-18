@@ -1,6 +1,7 @@
+---
 - name: Aktualisiere Git-Repository auf entferntem Host
   hosts: "{{ target_server }}"
-  gather_facts: no
+  gather_facts: false
   remote_user: "{{ target_user }}"
   collections:
     - lvrfrc87.git_acp
@@ -13,6 +14,6 @@
         path: "{{ local_dir }}"
         branch: "{{ git_branch }}"
         comment: "Automatic Changes by iobroker (interface)"
-        add: [ "." ]
+        add: ["."]
         url: "{{ full_bare_repo }}"
         push_force: true

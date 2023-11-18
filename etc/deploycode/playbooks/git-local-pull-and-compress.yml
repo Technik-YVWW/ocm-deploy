@@ -1,6 +1,6 @@
 - name: Aktualisiere Git-Repository auf entferntem Host
   hosts: "{{ target_server }}"
-  gather_facts: no
+  gather_facts: false
   remote_user: "{{ target_user }}"
   tasks:
     - name: Aktualisiere das Git-Repository
@@ -8,14 +8,14 @@
         repo: "{{ full_bare_repo }}"
         dest: "{{ remote_dir }}"
         force: true
-        update: yes
+        update: true
       delegate_to: localhost
 
 - name: Create Tar-Archiv.
   hosts: "{{ target_server }}"
-  gather_facts: no
+  gather_facts: false
   tasks:
-    - name: Lösche das Archiv, wenn es existiert
+    - name: Lösche das Archive, wenn es existiert
       file:
         path: "{{ archive_dest }}"
         state: absent
@@ -37,7 +37,8 @@
         chdir: "{{ remote_dir }}"
 
     - name: Calc SHA-256-Hash
-      ansible.builtin.shell: "sha256sum {{ archive_dest }} | cut -d ' ' -f 1 > {{ archive_dest }}.sha256"
+      ansible.builtin.shell: |
+        "sha256sum {{ archive_dest }} | cut -d ' ' -f 1 > {{ archive_dest }}.sha256"
       args:
         executable: /bin/bash
       register: sha256_result
