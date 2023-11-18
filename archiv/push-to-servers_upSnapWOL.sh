@@ -8,7 +8,7 @@ cd $SCRIPT_DIR
 
 . ./lib/functions
 
-# Rufe die Funktion watch_and_run_playbook auf
+# Rufe die Function watch_and_run_playbook auf
 
 ## Pushes all for Server 172.0.0.9
 watch_and_run_playbook "/git/ansible_ww_inventorys.git" "inventorys_to_semaphore" &

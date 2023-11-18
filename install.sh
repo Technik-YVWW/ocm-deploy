@@ -19,7 +19,7 @@ for bin in $bins; do
 	cp -fvu "$bin" /usr/bin
 done
 
-echo Installing Libaries..
+echo Installing Libraries ..
 cp -fvu usr/lib/libDeploy /usr/lib
 
 for file in ./etc/deploycode/playbooks/*; do

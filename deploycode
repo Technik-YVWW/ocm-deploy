@@ -3,11 +3,11 @@
 export DEPLOYCODE_SILENT_ANSIBLE=1
 export DEPLOYCODE_SILENT_INOTIFY=0
 
-# Get Libaries.
+# Get Libraries.
 # shellcheck source=usr/lib/libDeploy
-# Priorize, the Internal Libaries - thats the defaullt.
+# Priorize, the Internal Libraries - that's the default.
 if [ -f "/usr/lib/libDeploy" ]; then . /usr/lib/libDeploy; else . ./usr/lib/libDeploy; fi
-# Priorize, the Development Libs in this folder, thats for Test envirement.
+# Priorize, the Development Libs in this folder, that's for Test envirement.
 #if [ -r "./usr/lib/libDeploy" ]; then . ./usr/lib/libDeploy; else . /usr/lib/libDeploy; fi
 
 # Search for Playbook Folders..

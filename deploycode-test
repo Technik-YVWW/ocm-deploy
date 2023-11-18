@@ -2,11 +2,12 @@
 export DEPLOYCODE_SILENT_ANSIBLE=0
 export DEPLOYCODE_SILENT_INOTIFY=0
 
-# Get Libaries.
-# Priorize, the Internal Libaries - thats the defaullt.
+# Get Libraries.
+# shellcheck source=usr/lib/libDeploy
+# Priorize, the Internal Libraries - that's the default.
 #if [ -f "/usr/lib/libDeploy" ]; then . /usr/lib/libDeploy; else . ./usr/lib/libDeploy; fi
-# Priorize, the Development Libs in this folder, thats for Test envirement.
-if [ -f "./usr/lib/libDeploy" ]; then . ./usr/lib/libDeploy; else . /usr/lib/libDeploy; fi
+# Priorize, the Development Libs in this folder, that's for Test envirement.
+if [ -r "./usr/lib/libDeploy" ]; then . ./usr/lib/libDeploy; else . /usr/lib/libDeploy; fi
 
 # Search for Playbook Folders..
 pb_folder="/etc/deploycode/playbooks/"
@@ -31,13 +32,13 @@ config_folder="/etc/deploycode/configs-available"
 }
 
 count_configs=$(count_folder_files "/etc/deploycode/configs-enabled" "conf")
-echo "Aktivated Config Files: $count_configs"
+echo "Activated Config Files: $count_configs"
 
 ### Get the COnfig name to test;
 config_name="$1"
 [ -z "$config_name" ] && {
-	echo "Error: this is a Test Script. Overgive a File name Placed in $config_folder as First Patameter."
-	echo "Listing. Give it wihtOUT the .conf!"
+	echo "Error: this is a Test Script. Overgive a File name Placed in $config_folder as First Parameter."
+	echo "Listing. Give it without the .conf!"
 	ls $config_folder
 	echo "Aborting Script for this time."
 	exit 1

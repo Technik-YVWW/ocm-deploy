@@ -68,7 +68,7 @@ get_yml_value()
     grep -w  "$valuename" "$file_path" | awk -F':' '{print $2}' | tr -d '[:space:]'
 }
 
-# Funktion zum Ausführen des Ansible-Playbooks
+# Function to Execute the Ansible Playbook.
 run_ansible_playbook() {
     playbook="$1"
     inventory="$2"
@@ -92,12 +92,12 @@ run_ansible_playbook() {
 }
 
 #
-# Hauptfunktion der Libary, auch für die Endlosschleife mit inotifywait.
+# Mainfunction of the Library, got immortal use with Inotifywait
 #
-# $1: Ordner zu Überwachnung mit INotifywait
-# $2: DIe Vars Datei, zur Übergabe an run_ansible_playbook
-# $3: Die  Playbook datei, welche unter /usr/lib/libDeploy/playbooks liegt
-# $4: Testmode: Statt zu warten, sofort ausführen und nur einmal ausführen.
+# $1: Inotifywait Watchfolder
+# $2: The Vars file, for run_ansible_playbook ($3)
+# $3: The Playbook file, under /usr/lib/libDeploy/playbooks
+# $4: Testmode: execute direct and without wait and a Loop.
 #
 watch_for_run_pb() {
     config_file="$1"
@@ -162,14 +162,14 @@ watch_for_run_pb() {
           [ -z "$playbook_file" ] && break
           [ -z "$playbook_vars_file" ] && break
 
-          # Building Full Pathes..
+          # Building Full Paths..
           playbook_file="${playbook_folder}${playbook_file}.yml"
           [ ! -r "$playbook_file" ] && echo "Error! Playbook File ($playbook_file) does not exist! Abort!" && break
 
           playbook_vars_file="${playbook_vars_folder}${playbook_vars_file}.yml"
           [ ! -r "$playbook_vars_file" ] && echo "Error! Playbook Vars File ($playbook_vars_file) does not exist! Abort!" && break
 
-          # Creating a Temporary Invetory.
+          # Creating a Temporary Inventory.
           server=$(get_yml_value "$playbook_vars_file" "target_server")
           [ -z "$server" ] && {
              echo "Can not found a Server. Skript abort."

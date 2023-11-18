@@ -1,9 +1,9 @@
 # deploycode_inotify_ansible
 
-Quellcode automatisch über inotify und Ansible auf Anderen Geräten Deployen
+Deploy Code automatic over inotify and Ansible to Other Servers/Devices, etc
 
-* Vorrausetzungen, installiert:
+* Requirements, installed:
   * GNU find
-  * yq [NICHT jq! das ist für json, yq ist yaml]
+  * yq [NOT jq! this for json, yq is yaml]
   * intoifywait
   * ansible
