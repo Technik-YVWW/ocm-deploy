@@ -6,4 +6,4 @@ Deploy Code automatic over inotify and Ansible to Other Servers/Devices, etc
   * GNU find
   * yq [NOT jq! this for json, yq is yaml]
   * inotifywait (most = Inotify-tools)
-  * ansible
+  * ansible-core or full ansible
