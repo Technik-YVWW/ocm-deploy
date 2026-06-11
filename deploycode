@@ -65,7 +65,12 @@ trap terminate TERM
 trap kill_runnings EXIT
 
 cd "$config_folder" || exit 1
-count_configs=$(count_folder_files "$config_folder" "conf" 2>/dev/null || echo 0)
+count_configs=0
+for file in "$config_folder"/*.conf; do
+	[ -e "$file" ] || [ -L "$file" ] || continue
+	count_configs=$((count_configs + 1))
+done
+
 [ "$count_configs" -gt 0 ] || {
 	echo "No enabled config files found in $config_folder. Nothing to do." >&2
 	exit 1
