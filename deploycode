@@ -15,54 +15,65 @@ pb_folder="/etc/deploycode/playbooks/"
 [ ! -d "$pb_folder" ] && pb_folder="./etc/deploycode/playbooks"
 
 [ ! -d "$pb_folder" ] && {
-	echo "Error! Can not found the Playbook folder. Aborting Script."
-	exit 0
+	echo "Error! Can not found the Playbook folder. Aborting Script." >&2
+	exit 1
 }
 
 pb_vars_folder="/etc/deploycode/playbook-vars/"
 [ ! -d "$pb_vars_folder" ] && {
-	echo "Error! Can not found the Playbook-Vars Folder folder ($pb_vars_folder) folder. Aborting Script."
-	exit 0
+	echo "Error! Can not found the Playbook-Vars Folder folder ($pb_vars_folder) folder. Aborting Script." >&2
+	exit 1
 }
 
 config_folder="/etc/deploycode/configs-enabled"
 [ ! -d "$config_folder" ] && {
-	echo "Error! Can not found the Config-Enabled folder ($config_folder) folder. Aborting Script."
-	exit 0
+	echo "Error! Can not found the Config-Enabled folder ($config_folder) folder. Aborting Script." >&2
+	exit 1
 }
 
-pb_tmp_pids="/tmp/deploycode/pids/"
+runtime_dir="${DEPLOYCODE_RUNTIME_DIR:-/run/deploycode}"
+pb_tmp_pids="$runtime_dir/pids/"
 [ ! -d "$pb_tmp_pids" ] && mkdir -p "$pb_tmp_pids"
 
-ctrl_c() {
-	echo "** CTRL-C Pressed. Delete RUnning PIDS..."
-	kill_runnings
+kill_runnings() {
+	for file in "$pb_tmp_pids"/*.pid; do
+		[ -f "$file" ] || continue
+		pid=$(cat "$file")
+		[ -n "$pid" ] || continue
+
+		echo "Stopping watcher PID: $pid"
+		pkill -TERM -P "$pid" 2>/dev/null || true
+		kill -TERM "$pid" 2>/dev/null || true
+		rm -f "$file"
+	done
 }
 
-kill_runnings() {
-	count_pids=0
-	#count_pids=$(ls $pb_tmp_pids/*.pid 2>/dev/null | wc -w)
-	count_pids=$(count_folder_files "$pb_tmp_pids" "pid")
-	[ ! "$count_pids" = "0" ] || return 0
+ctrl_c() {
+	echo "** CTRL-C Pressed. Stop running watchers..."
+	kill_runnings
+	exit 130
+}
 
-	for file in "$pb_tmp_pids"/*.pid; do
-		pid=$(cat "$file")
-		echo "Killing PID: $pid"
-		[ -z "$pid" ] && continue
-
-		pkill -TERM -P "$pid"
-		[ -f "$file" ] && rm -f "$file"
-	done
+terminate() {
+	kill_runnings
+	exit 143
 }
 
 # trap ctrl-c and Termination..
 trap ctrl_c INT
-trap kill_runnings TERM
+trap terminate TERM
+trap kill_runnings EXIT
 
 cd "$config_folder" || exit 1
-count_configs=$(count_folder_files "$config_folder" "conf")
+count_configs=$(count_folder_files "$config_folder" "conf" 2>/dev/null || echo 0)
+[ "$count_configs" -gt 0 ] || {
+	echo "No enabled config files found in $config_folder. Nothing to do." >&2
+	exit 1
+}
+
 count_run=0
 for file in "$config_folder"/*.conf; do
+	[ -e "$file" ] || [ -L "$file" ] || continue
 
 	echo Working on: "$file"
 	[ -L "$file" ] && {
