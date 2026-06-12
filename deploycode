@@ -1,45 +1,57 @@
 #!/bin/sh
-# Read the Readme for Needed Tools!
+# Read the README for needed tools.
 export DEPLOYCODE_SILENT_ANSIBLE=1
 export DEPLOYCODE_SILENT_INOTIFY=0
 
-# Get Libraries.
+# Resolve the repository or installation directory once.
+SCRIPT_DIR=$(CDPATH= cd "$(dirname "$0")" && pwd)
+
+# Get libraries.
 # shellcheck source=usr/lib/libDeploy
-# Priorize, the Internal Libraries - that's the default.
-if [ -f "/usr/lib/libDeploy" ]; then . /usr/lib/libDeploy; else . ./usr/lib/libDeploy; fi
-# Priorize, the Development Libs in this folder, that's for Test envirement.
-#if [ -r "./usr/lib/libDeploy" ]; then . ./usr/lib/libDeploy; else . /usr/lib/libDeploy; fi
+# Prioritize the installed library. Fall back to the development tree.
+if [ -f "/usr/lib/libDeploy" ]; then
+	. /usr/lib/libDeploy
+else
+	. "$SCRIPT_DIR/usr/lib/libDeploy"
+fi
 
-# Search for Playbook Folders..
+# Search for runtime folders.
 pb_folder="/etc/deploycode/playbooks/"
-[ ! -d "$pb_folder" ] && pb_folder="./etc/deploycode/playbooks"
+[ -d "$pb_folder" ] || pb_folder="$SCRIPT_DIR/etc/deploycode/playbooks/"
 
-[ ! -d "$pb_folder" ] && {
-	echo "Error! Can not found the Playbook folder. Aborting Script." >&2
+[ -d "$pb_folder" ] || {
+	echo "Error! Can not find the playbook folder. Aborting script." >&2
 	exit 1
 }
 
 pb_vars_folder="/etc/deploycode/playbook-vars/"
-[ ! -d "$pb_vars_folder" ] && {
-	echo "Error! Can not found the Playbook-Vars Folder folder ($pb_vars_folder) folder. Aborting Script." >&2
+[ -d "$pb_vars_folder" ] || pb_vars_folder="$SCRIPT_DIR/etc/deploycode/playbook-vars/"
+
+[ -d "$pb_vars_folder" ] || {
+	echo "Error! Can not find the playbook-vars folder ($pb_vars_folder). Aborting script." >&2
 	exit 1
 }
 
 config_folder="/etc/deploycode/configs-enabled"
-[ ! -d "$config_folder" ] && {
-	echo "Error! Can not found the Config-Enabled folder ($config_folder) folder. Aborting Script." >&2
+[ -d "$config_folder" ] || config_folder="$SCRIPT_DIR/etc/deploycode/configs-enabled"
+
+[ -d "$config_folder" ] || {
+	echo "Error! Can not find the configs-enabled folder ($config_folder). Aborting script." >&2
 	exit 1
 }
 
 runtime_dir="${DEPLOYCODE_RUNTIME_DIR:-/run/deploycode}"
 pb_tmp_pids="$runtime_dir/pids/"
-[ ! -d "$pb_tmp_pids" ] && mkdir -p "$pb_tmp_pids"
+mkdir -p "$pb_tmp_pids"
 
 kill_runnings() {
 	for file in "$pb_tmp_pids"/*.pid; do
 		[ -f "$file" ] || continue
 		pid=$(cat "$file")
-		[ -n "$pid" ] || continue
+		[ -n "$pid" ] || {
+			rm -f "$file"
+			continue
+		}
 
 		echo "Stopping watcher PID: $pid"
 		pkill -TERM -P "$pid" 2>/dev/null || true
@@ -49,7 +61,7 @@ kill_runnings() {
 }
 
 ctrl_c() {
-	echo "** CTRL-C Pressed. Stop running watchers..."
+	echo "** CTRL-C pressed. Stop running watchers..."
 	kill_runnings
 	exit 130
 }
@@ -59,18 +71,12 @@ terminate() {
 	exit 143
 }
 
-# trap ctrl-c and Termination..
+# Trap CTRL-C and termination.
 trap ctrl_c INT
 trap terminate TERM
 trap kill_runnings EXIT
 
-cd "$config_folder" || exit 1
-count_configs=0
-for file in "$config_folder"/*.conf; do
-	[ -e "$file" ] || [ -L "$file" ] || continue
-	count_configs=$((count_configs + 1))
-done
-
+count_configs=$(count_folder_files "$config_folder" "conf")
 [ "$count_configs" -gt 0 ] || {
 	echo "No enabled config files found in $config_folder. Nothing to do." >&2
 	exit 1
@@ -80,21 +86,19 @@ count_run=0
 for file in "$config_folder"/*.conf; do
 	[ -e "$file" ] || [ -L "$file" ] || continue
 
-	echo Working on: "$file"
-	[ -L "$file" ] && {
-		file=$(readlink "$file")
-		file=$(realpath "$file")
-	}
+	echo "Working on: $file"
+	[ -L "$file" ] && file=$(realpath "$file")
 	count_run=$((count_run + 1))
 	echo "Starting run $count_run from $count_configs"
 
-	# Its not The Last Config - Start in the Background.
-	[ ! "$count_run" = "$count_configs" ] && {
+	# It is not the last config: start in the background.
+	[ "$count_run" = "$count_configs" ] || {
 		watch_for_run_pb "$file" &
 		watch_pid="$!"
 		[ -n "$watch_pid" ] && echo "$watch_pid" >"${pb_tmp_pids}${watch_pid}.pid"
+		continue
 	}
 
-	# Its the Last Config - Start in the Foreground.
-	[ "$count_run" = "$count_configs" ] && watch_for_run_pb "$file"
+	# It is the last config: start in the foreground.
+	watch_for_run_pb "$file"
 done
