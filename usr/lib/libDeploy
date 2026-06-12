@@ -207,13 +207,21 @@ watch_for_run_pb() {
             }
 
             configured_playbooks=0
+            chain_ended=0
             i=1
             while [ "$i" -le 100 ]; do
                 playbook_name=$(get_config_value "$config_file" "playbook${i}")
                 playbook_vars_name=$(get_config_value "$config_file" "vars_playbook${i}")
 
                 if [ -z "$playbook_name" ] && [ -z "$playbook_vars_name" ]; then
-                    break
+                    chain_ended=1
+                    i=$((i + 1))
+                    continue
+                fi
+
+                if [ "$chain_ended" = "1" ]; then
+                    echo "Error! Playbook numbering in $config_file is not consecutive at index $i. Abort." >&2
+                    exit 1
                 fi
 
                 if [ -z "$playbook_name" ] || [ -z "$playbook_vars_name" ]; then
