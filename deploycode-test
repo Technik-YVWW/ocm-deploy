@@ -1,4 +1,5 @@
 #!/bin/sh
+#shellcheck disable=SC1091
 export DEPLOYCODE_SILENT_ANSIBLE=0
 export DEPLOYCODE_SILENT_INOTIFY=0
 export DEPLOYCODE_RUNTIME_DIR="${DEPLOYCODE_RUNTIME_DIR:-/tmp/deploycode-test}"

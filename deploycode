@@ -1,4 +1,5 @@
 #!/bin/sh
+#shellcheck disable=SC1091
 # Read the README for needed tools.
 export DEPLOYCODE_SILENT_ANSIBLE=1
 export DEPLOYCODE_SILENT_INOTIFY=0
@@ -25,7 +26,7 @@ pb_folder="/etc/deploycode/playbooks/"
 }
 
 pb_vars_folder="/etc/deploycode/playbook-vars/"
-[ -d "$pb_vars_folder" ] || pb_vars_folder="${SCRIPT_DIR}etc/deploycode/playbook-vars/"
+[ -d "$pb_vars_folder" ] || pb_vars_folder="${SCRIPT_DIR}/etc/deploycode/playbook-vars/"
 
 [ -d "$pb_vars_folder" ] || {
 	echo "Error! Can not find the playbook-vars folder ($pb_vars_folder). Aborting script." >&2
