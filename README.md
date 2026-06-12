@@ -1,6 +1,6 @@
-# deploycode
+# ocm-deploy
 
-`deploycode` watches configured filesystem paths and runs ordered Ansible playbook chains after a change. The playbooks may act locally or remotely.
+`ocm-deploy` watches configured filesystem paths and runs ordered Ansible playbook chains after a change. The playbooks may act locally or remotely.
 
 ```text
 filesystem event
@@ -11,7 +11,7 @@ filesystem event
 -> local or remote target
 ```
 
-The runtime command remains `/usr/bin/deploycode`. The existing repository name `deploycode_inotify_ansible` can be shortened to `deploycode` after the modernization branch is merged; renaming the installed command is unnecessary and would only create avoidable migration work.
+The name describes the component's role in the OCM system. The current trigger mechanism remains `inotifywait`, while the generic runner is intentionally independent from any single deployment payload.
 
 ## Requirements
 
@@ -31,12 +31,12 @@ The installer additionally uses standard tools such as `install`, `readlink`, `d
 sudo ./install.sh
 ```
 
-The installer creates the `/etc/deploycode` directory structure, installs the runtime scripts and library, installs the systemd unit, and copies missing skeleton files without overwriting local configuration.
+The installer creates the `/etc/ocm-deploy` directory structure, installs the runtime scripts and library, installs the systemd unit, and copies missing skeleton files without overwriting local configuration.
 
 ## Configuration layout
 
 ```text
-/etc/deploycode/
+/etc/ocm-deploy/
 ├── configs-available/
 ├── configs-enabled/
 ├── playbooks/
@@ -47,11 +47,11 @@ The installer creates the `/etc/deploycode` directory structure, installs the ru
 Create a config from the installed skeleton:
 
 ```sh
-sudo cp /etc/deploycode/configs-available/_skeleton.conf \
-  /etc/deploycode/configs-available/example.conf
-sudo editor /etc/deploycode/configs-available/example.conf
+sudo cp /etc/ocm-deploy/configs-available/_skeleton.conf \
+  /etc/ocm-deploy/configs-available/example.conf
+sudo editor /etc/ocm-deploy/configs-available/example.conf
 sudo ln -s ../configs-available/example.conf \
-  /etc/deploycode/configs-enabled/example.conf
+  /etc/ocm-deploy/configs-enabled/example.conf
 ```
 
 A config defines one watch directory and a consecutive, ordered playbook chain:
@@ -64,34 +64,34 @@ playbook2:test-ping
 vars_playbook2:example
 ```
 
-Each `playbookN` requires a matching `vars_playbookN`. Numbering must remain consecutive. The referenced vars file must contain a top-level `target_server` value because `deploycode` creates a temporary Ansible inventory for each playbook execution.
+Each `playbookN` requires a matching `vars_playbookN`. Numbering must remain consecutive. The referenced vars file must contain a top-level `target_server` value because `ocm-deploy` creates a temporary Ansible inventory for each playbook execution.
 
 ## Validate a config once
 
 Before enabling the long-running watcher, execute a config directly:
 
 ```sh
-sudo deploycode-test example
+sudo ocm-deploy-test example
 ```
 
 For development directly from the repository root:
 
 ```sh
-sh ./deploycode-test _skeleton
+sh ./ocm-deploy-test _skeleton
 ```
 
-The test command uses `/tmp/deploycode-test` for transient state unless `DEPLOYCODE_RUNTIME_DIR` is explicitly set.
+The test command uses `/tmp/ocm-deploy-test` for transient state unless `OCM_DEPLOY_RUNTIME_DIR` is explicitly set.
 
 ## Enable the service
 
 ```sh
-sudo systemctl enable --now deploycode-inotify
+sudo systemctl enable --now ocm-deploy
 ```
 
-Runtime state is stored below `/run/deploycode`:
+Runtime state is stored below `/run/ocm-deploy`:
 
 ```text
-/run/deploycode/
+/run/ocm-deploy/
 ├── inv/
 ├── locks/
 └── pids/
@@ -102,9 +102,9 @@ A separate `flock` lock exists for each enabled config. This prevents duplicate 
 ## Runtime semantics
 
 - A watcher reacts to `modify`, `create`, `delete`, and `move` events below its configured directory.
-- Events are debounced for five seconds by default. Override this with `DEPLOYCODE_DEBOUNCE_SECONDS`.
+- Events are debounced for five seconds by default. Override this with `OCM_DEPLOY_DEBOUNCE_SECONDS`.
 - The watcher runs the configured chain after a filesystem event. It does **not** perform an automatic initial deployment merely because the service starts.
-- Use `deploycode-test <config>` for an explicit one-shot execution and validation.
+- Use `ocm-deploy-test <config>` for an explicit one-shot execution and validation.
 
 ## Development checks
 
@@ -113,6 +113,10 @@ sh ./check-shell.sh
 ```
 
 The script always runs `dash -n` and `bash -n`. It additionally runs `shellcheck` and `shfmt -d` when those tools are installed.
+
+## Migration from the pre-production name
+
+The modernization branch used the temporary name `deploycode`. Before installing `ocm-deploy` on a host that already contains that earlier test version, remove or disable the obsolete `deploycode-inotify.service` and migrate any local files from `/etc/deploycode` to `/etc/ocm-deploy`.
 
 ## Planned first extension
 

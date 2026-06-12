@@ -2,7 +2,7 @@
 
 set -eu
 
-files="deploycode deploycode-test install.sh usr/lib/libDeploy"
+files="ocm-deploy ocm-deploy-test install.sh usr/lib/libDeploy"
 
 for file in $files; do
 	dash -n "$file"

@@ -1,31 +1,31 @@
 #!/bin/sh
-#shellcheck disable=SC1091
+# shellcheck disable=SC1091
 export DEPLOYCODE_SILENT_ANSIBLE=0
 export DEPLOYCODE_SILENT_INOTIFY=0
-export DEPLOYCODE_RUNTIME_DIR="${DEPLOYCODE_RUNTIME_DIR:-/tmp/deploycode-test}"
+export DEPLOYCODE_RUNTIME_DIR="${DEPLOYCODE_RUNTIME_DIR:-/tmp/ocm-deploy-test}"
 
 SCRIPT_DIR=$(CDPATH='' cd "$(dirname "$0")" && pwd)
 
 # Get libraries.
 # shellcheck source=usr/lib/libDeploy
 # Prioritize the development library for tests.
-if [ -r "$SCRIPT_DIR/usr/lib/libDeploy" ]; then
-	. "$SCRIPT_DIR/usr/lib/libDeploy"
+if [ -r "${SCRIPT_DIR}/usr/lib/libDeploy" ]; then
+	. "${SCRIPT_DIR}/usr/lib/libDeploy"
 else
 	. /usr/lib/libDeploy
 fi
 
 # Search for playbook folders.
-pb_folder="/etc/deploycode/playbooks/"
-[ -d "$pb_folder" ] || pb_folder="$SCRIPT_DIR/etc/deploycode/playbooks/"
+pb_folder="/etc/ocm-deploy/playbooks/"
+[ -d "$pb_folder" ] || pb_folder="${SCRIPT_DIR}/etc/ocm-deploy/playbooks/"
 
 [ -d "$pb_folder" ] || {
 	echo "Error! Can not find the playbook folder. Aborting script." >&2
 	exit 1
 }
 
-pb_vars_folder="/etc/deploycode/playbook-vars/"
-[ -d "$pb_vars_folder" ] || pb_vars_folder="$SCRIPT_DIR/etc/deploycode/playbook-vars/"
+pb_vars_folder="/etc/ocm-deploy/playbook-vars/"
+[ -d "$pb_vars_folder" ] || pb_vars_folder="${SCRIPT_DIR}/etc/ocm-deploy/playbook-vars/"
 
 [ -d "$pb_vars_folder" ] || {
 	echo "Error! Can not find the playbook-vars folder ($pb_vars_folder). Aborting script." >&2
@@ -33,16 +33,16 @@ pb_vars_folder="/etc/deploycode/playbook-vars/"
 }
 
 # The config folder in the test script is configs-available.
-config_folder="/etc/deploycode/configs-available"
-[ -d "$config_folder" ] || config_folder="$SCRIPT_DIR/etc/deploycode/configs-available"
+config_folder="/etc/ocm-deploy/configs-available"
+[ -d "$config_folder" ] || config_folder="${SCRIPT_DIR}/etc/ocm-deploy/configs-available"
 
 [ -d "$config_folder" ] || {
 	echo "Error! Can not find the configs-available folder ($config_folder). Aborting script." >&2
 	exit 1
 }
 
-enabled_config_folder="/etc/deploycode/configs-enabled"
-[ -d "$enabled_config_folder" ] || enabled_config_folder="$SCRIPT_DIR/etc/deploycode/configs-enabled"
+enabled_config_folder="/etc/ocm-deploy/configs-enabled"
+[ -d "$enabled_config_folder" ] || enabled_config_folder="${SCRIPT_DIR}/etc/ocm-deploy/configs-enabled"
 count_configs=$(count_folder_files "$enabled_config_folder" "conf" 2>/dev/null || echo 0)
 echo "Activated config files: $count_configs"
 

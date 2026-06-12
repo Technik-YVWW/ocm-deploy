@@ -6,8 +6,8 @@ set -eu
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 cd "$SCRIPT_DIR" || exit 1
 
-bins="deploycode deploycode-test"
-folders="/etc/deploycode/configs-available /etc/deploycode/configs-enabled /etc/deploycode/playbooks /etc/deploycode/playbook-vars /etc/deploycode/roles"
+bins="ocm-deploy ocm-deploy-test"
+folders="/etc/ocm-deploy/configs-available /etc/ocm-deploy/configs-enabled /etc/ocm-deploy/playbooks /etc/ocm-deploy/playbook-vars /etc/ocm-deploy/roles"
 
 echo "Checking folders..."
 for folder in $folders; do
@@ -24,25 +24,25 @@ echo "Installing library..."
 install -m 0644 usr/lib/libDeploy /usr/lib/libDeploy
 
 echo "Installing playbooks..."
-for file in ./etc/deploycode/playbooks/*; do
+for file in ./etc/ocm-deploy/playbooks/*; do
 	[ -r "$file" ] || continue
-	install -m 0644 "$file" "/etc/deploycode/playbooks/$(basename "$file")"
+	install -m 0644 "$file" "/etc/ocm-deploy/playbooks/$(basename "$file")"
 done
 
-if [ -d ./etc/deploycode/roles ]; then
+if [ -d ./etc/ocm-deploy/roles ]; then
 	echo "Installing roles..."
-	cp -R ./etc/deploycode/roles/. /etc/deploycode/roles/
+	cp -R ./etc/ocm-deploy/roles/. /etc/ocm-deploy/roles/
 fi
 
 echo "Installing missing skeleton files..."
-for file in ./etc/deploycode/configs-available/* ./etc/deploycode/playbook-vars/*; do
+for file in ./etc/ocm-deploy/configs-available/* ./etc/ocm-deploy/playbook-vars/*; do
 	[ -r "$file" ] || continue
 	case "$file" in
-		./etc/deploycode/configs-available/*)
-			target="/etc/deploycode/configs-available/$(basename "$file")"
+		./etc/ocm-deploy/configs-available/*)
+			target="/etc/ocm-deploy/configs-available/$(basename "$file")"
 			;;
-		./etc/deploycode/playbook-vars/*)
-			target="/etc/deploycode/playbook-vars/$(basename "$file")"
+		./etc/ocm-deploy/playbook-vars/*)
+			target="/etc/ocm-deploy/playbook-vars/$(basename "$file")"
 			;;
 	esac
 
@@ -51,10 +51,10 @@ done
 
 if [ -d "/etc/systemd/system/" ]; then
 	echo "Installing systemd service..."
-	install -m 0644 etc/systemd/system/deploycode-inotify.service /etc/systemd/system/deploycode-inotify.service
+	install -m 0644 etc/systemd/system/ocm-deploy.service /etc/systemd/system/ocm-deploy.service
 	if command -v systemctl >/dev/null 2>&1; then
 		systemctl daemon-reload
 	fi
-	echo "[INFO] Enable the service with: systemctl enable deploycode-inotify"
-	echo "[INFO] Start or stop it with: systemctl start|stop deploycode-inotify"
+	echo "[INFO] Enable the service with: systemctl enable ocm-deploy"
+	echo "[INFO] Start or stop it with: systemctl start|stop ocm-deploy"
 fi

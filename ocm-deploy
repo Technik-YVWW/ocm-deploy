@@ -1,5 +1,5 @@
 #!/bin/sh
-#shellcheck disable=SC1091
+# shellcheck disable=SC1091
 # Read the README for needed tools.
 export DEPLOYCODE_SILENT_ANSIBLE=1
 export DEPLOYCODE_SILENT_INOTIFY=0
@@ -17,24 +17,24 @@ else
 fi
 
 # Search for runtime folders.
-pb_folder="/etc/deploycode/playbooks/"
-[ -d "$pb_folder" ] || pb_folder="${SCRIPT_DIR}/etc/deploycode/playbooks/"
+pb_folder="/etc/ocm-deploy/playbooks/"
+[ -d "$pb_folder" ] || pb_folder="${SCRIPT_DIR}/etc/ocm-deploy/playbooks/"
 
 [ -d "$pb_folder" ] || {
 	echo "Error! Can not find the playbook folder. Aborting script." >&2
 	exit 1
 }
 
-pb_vars_folder="/etc/deploycode/playbook-vars/"
-[ -d "$pb_vars_folder" ] || pb_vars_folder="${SCRIPT_DIR}/etc/deploycode/playbook-vars/"
+pb_vars_folder="/etc/ocm-deploy/playbook-vars/"
+[ -d "$pb_vars_folder" ] || pb_vars_folder="${SCRIPT_DIR}/etc/ocm-deploy/playbook-vars/"
 
 [ -d "$pb_vars_folder" ] || {
 	echo "Error! Can not find the playbook-vars folder ($pb_vars_folder). Aborting script." >&2
 	exit 1
 }
 
-config_folder="/etc/deploycode/configs-enabled"
-[ -d "$config_folder" ] || config_folder="${SCRIPT_DIR}/etc/deploycode/configs-enabled"
+config_folder="/etc/ocm-deploy/configs-enabled"
+[ -d "$config_folder" ] || config_folder="${SCRIPT_DIR}/etc/ocm-deploy/configs-enabled"
 
 [ -d "$config_folder" ] || {
 	echo "Error! Can not find the configs-enabled folder ($config_folder). Aborting script." >&2
@@ -45,7 +45,7 @@ pb_folder="$(canonical_dir "$pb_folder")/"
 pb_vars_folder="$(canonical_dir "$pb_vars_folder")/"
 config_folder="$(canonical_dir "$config_folder")"
 
-runtime_dir="${DEPLOYCODE_RUNTIME_DIR:-/run/deploycode}"
+runtime_dir="${DEPLOYCODE_RUNTIME_DIR:-/run/ocm-deploy}"
 pb_tmp_pids="$runtime_dir/pids/"
 mkdir -p "$pb_tmp_pids"
 
