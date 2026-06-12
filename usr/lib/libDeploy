@@ -2,6 +2,13 @@
 [ "${DEPLOYCODE_SILENT_ANSIBLE:-}" = "" ] && DEPLOYCODE_SILENT_ANSIBLE=0
 [ "${DEPLOYCODE_SILENT_INOTIFY:-}" = "" ] && DEPLOYCODE_SILENT_INOTIFY=0
 
+canonical_dir() (
+    CDPATH=
+    cd -P "$1" || exit 1
+    pwd -P
+)
+
+
 #
 # Find tools for the scripts: ansible-playbook, inotifywait and flock.
 #

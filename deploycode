@@ -4,7 +4,7 @@ export DEPLOYCODE_SILENT_ANSIBLE=1
 export DEPLOYCODE_SILENT_INOTIFY=0
 
 # Resolve the repository or installation directory once.
-SCRIPT_DIR=$(CDPATH= cd "$(dirname "$0")" && pwd)
+SCRIPT_DIR=$(CDPATH='' cd "$(dirname "$0")" && pwd)
 
 # Get libraries.
 # shellcheck source=usr/lib/libDeploy
@@ -12,12 +12,12 @@ SCRIPT_DIR=$(CDPATH= cd "$(dirname "$0")" && pwd)
 if [ -f "/usr/lib/libDeploy" ]; then
 	. /usr/lib/libDeploy
 else
-	. "$SCRIPT_DIR/usr/lib/libDeploy"
+	. "${SCRIPT_DIR}/usr/lib/libDeploy"
 fi
 
 # Search for runtime folders.
 pb_folder="/etc/deploycode/playbooks/"
-[ -d "$pb_folder" ] || pb_folder="$SCRIPT_DIR/etc/deploycode/playbooks/"
+[ -d "$pb_folder" ] || pb_folder="${SCRIPT_DIR}/etc/deploycode/playbooks/"
 
 [ -d "$pb_folder" ] || {
 	echo "Error! Can not find the playbook folder. Aborting script." >&2
@@ -25,7 +25,7 @@ pb_folder="/etc/deploycode/playbooks/"
 }
 
 pb_vars_folder="/etc/deploycode/playbook-vars/"
-[ -d "$pb_vars_folder" ] || pb_vars_folder="$SCRIPT_DIR/etc/deploycode/playbook-vars/"
+[ -d "$pb_vars_folder" ] || pb_vars_folder="${SCRIPT_DIR}etc/deploycode/playbook-vars/"
 
 [ -d "$pb_vars_folder" ] || {
 	echo "Error! Can not find the playbook-vars folder ($pb_vars_folder). Aborting script." >&2
@@ -33,12 +33,16 @@ pb_vars_folder="/etc/deploycode/playbook-vars/"
 }
 
 config_folder="/etc/deploycode/configs-enabled"
-[ -d "$config_folder" ] || config_folder="$SCRIPT_DIR/etc/deploycode/configs-enabled"
+[ -d "$config_folder" ] || config_folder="${SCRIPT_DIR}/etc/deploycode/configs-enabled"
 
 [ -d "$config_folder" ] || {
 	echo "Error! Can not find the configs-enabled folder ($config_folder). Aborting script." >&2
 	exit 1
 }
+
+pb_folder="$(canonical_dir "$pb_folder")/"
+pb_vars_folder="$(canonical_dir "$pb_vars_folder")/"
+config_folder="$(canonical_dir "$config_folder")"
 
 runtime_dir="${DEPLOYCODE_RUNTIME_DIR:-/run/deploycode}"
 pb_tmp_pids="$runtime_dir/pids/"
