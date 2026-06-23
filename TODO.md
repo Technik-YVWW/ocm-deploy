@@ -2,11 +2,11 @@
 
 ## Before merging `rename-ocm-deploy`
 
-- Run `sh ./check-shell.sh` on a development machine with `shellcheck` and `shfmt` installed.
-- Run `sudo ./install.sh` in a disposable Debian test system and validate `systemctl enable --now ocm-deploy`.
+- Run the shell checks on a development machine with `shellcheck` and `shfmt` installed.
+- Run the installer in a disposable Debian test system and validate that the `ocm-deploy` service can be enabled and started.
 - Add one real enabled test config and verify service restart behavior after a filesystem event.
 - Rename the local repository folder to `ocm-deploy` after checking out the renamed branch.
-- Rename the GitHub repository from `deploycode_inotify_ansible` to `ocm-deploy` after validation and merge.
+- Validate `ocm-deploy` after merge on a target host.
 
 ## Runtime hardening backlog
 
