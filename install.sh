@@ -38,12 +38,12 @@ echo "Installing missing skeleton files..."
 for file in ./etc/ocm-deploy/configs-available/* ./etc/ocm-deploy/playbook-vars/*; do
 	[ -r "$file" ] || continue
 	case "$file" in
-		./etc/ocm-deploy/configs-available/*)
-			target="/etc/ocm-deploy/configs-available/$(basename "$file")"
-			;;
-		./etc/ocm-deploy/playbook-vars/*)
-			target="/etc/ocm-deploy/playbook-vars/$(basename "$file")"
-			;;
+	./etc/ocm-deploy/configs-available/*)
+		target="/etc/ocm-deploy/configs-available/$(basename "$file")"
+		;;
+	./etc/ocm-deploy/playbook-vars/*)
+		target="/etc/ocm-deploy/playbook-vars/$(basename "$file")"
+		;;
 	esac
 
 	[ -e "$target" ] || install -m 0644 "$file" "$target"
